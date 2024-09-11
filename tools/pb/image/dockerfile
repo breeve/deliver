@@ -1,0 +1,28 @@
+FROM rockylinux:8.9.20231119
+
+ADD entry.sh /entry.sh
+
+# ENTRYPOINT ["/entry.sh"]
+
+# base
+RUN yum install -y wget
+RUN yum install -y curl
+RUN yum install -y findutils
+RUN yum install -y python3
+RUN yum install -y make
+RUN yum install -y which
+
+
+# go1.23.0
+RUN wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.23.0.linux-amd64.tar.gz
+ENV PATH="/usr/bin/:/usr/local/bin/:/usr/local/go/bin:/root/go/bin:${PATH}"
+
+# proto
+RUN yum install -y protobuf-compiler
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
+RUN go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
+RUN go install github.com/envoyproxy/protoc-gen-validate@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+CMD [ "bash" ]

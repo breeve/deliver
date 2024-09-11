@@ -1,0 +1,18 @@
+syntax = "proto3";
+package deliver.market.v1;
+option go_package = "github.com/breeve/deliver/pkg/api/hello/v1;hello";
+
+import "google/protobuf/empty.proto"; 
+import "google/api/annotations.proto";
+
+service HelloService {
+    rpc Echo(google.protobuf.Empty) returns (Hello) {
+        option (google.api.http) = {
+            get : "/deliver/hello/echo"
+        };
+    }
+}
+
+message Hello {
+    string message = 1;
+}
