@@ -1,0 +1,32 @@
+products:
+- name: k8s
+  sub_products:
+  - name: controller
+    version: v0.0.4
+    sub_systems:
+    - name: workload
+      modules:
+      - name: deployment
+        applications:
+        - name: deployment-app
+          version: v0.0.1
+      - name: job
+        applications:
+        - name: job-app
+          version: v0.0.1
+    - name: extension
+      module:
+      - name: operator
+        applications:
+        - name: operator-app
+          version: v0.0.1
+  - name: apiserver
+    version: v0.0.1
+    sub_systems:
+    - name: apiserver
+      modules:
+      - name: apiserver
+        applications:
+        - name: apiserver-app
+          version: v0.0.1
+

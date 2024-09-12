@@ -1,0 +1,53 @@
+name: deployment-app-config
+application: deployment-app
+configs:
+  - name: string_field
+    description: string field
+    type: string
+    string_value:
+      default_value: ""
+  - name: int_field
+    description: int field
+    type: int
+    int_value:
+      default_value: 100
+  - name: bool_field
+    description: bool field
+    type: bool
+    bool_value:
+      default_value: true
+  - name: float_field
+    description: float field
+    type: float
+    float_value:
+      default_value: 3.14
+  - name: list_field
+    description: list field
+    type: list
+    list_value:
+    - name: item_field1
+      description: item field1
+      type: "" # string, int, bool, float, map
+      string_value: ""
+      int_value: ""
+      bool_value: ""
+      float_value: ""
+      map_value: ""
+  - name: replicas
+    description: replicas of deployment
+    type: map
+    map_value:
+      key:
+        type: string
+        string_value:
+          default_value: ""
+      value:
+        type: "" # string, int, bool, float, map
+        string_value: ""
+        int_value: ""
+        bool_value: ""
+        float_value: ""
+        map_value: ""
+
+
+  
