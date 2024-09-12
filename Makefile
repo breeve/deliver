@@ -2,8 +2,9 @@ DESCRIBE := $(shell git describe --tags)
 DATE := $(shell date +"%Y%m%d%H%M%S")
 TAG := $(DESCRIBE)-$(DATE)
 
+# docker login docker.io -u breeve
 image_tools:
-	cd tools/pb/image; docker build . -f dockerfile -t toolspb:latest
+	cd tools/pb/image; docker build . -f dockerfile -t docker.io/breeve/toolspb:latest
 
 pb:
 	echo $(PATH)
