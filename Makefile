@@ -4,7 +4,7 @@ TAG := $(DESCRIBE)-$(DATE)
 
 # docker login docker.io -u breeve
 image_tools:
-	cd tools/pb/image; docker build . -f dockerfile -t docker.io/breeve/toolspb:latest
+	cd tools/pb/image; docker build . -f dockerfile -t docker.io/breeve/toolsall:latest; docker push docker.io/breeve/toolsall:latest
 
 pb:
 	echo $(PATH)

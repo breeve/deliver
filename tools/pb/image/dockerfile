@@ -11,7 +11,7 @@ RUN yum install -y findutils
 RUN yum install -y python3
 RUN yum install -y make
 RUN yum install -y which
-
+RUN yum install -y vim
 
 # go1.23.0
 RUN wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.23.0.linux-amd64.tar.gz
@@ -24,5 +24,10 @@ RUN go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
 RUN go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 RUN go install github.com/envoyproxy/protoc-gen-validate@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# bazel
+ADD bazel.repo /etc/yum.repos.d/bazel.repo
+ADD bazel-6.1.0-linux-x86_64 /usr/bin/bazel-6.1.0-linux-x86_64
+RUN yum install -y bazel4
 
 CMD [ "bash" ]
