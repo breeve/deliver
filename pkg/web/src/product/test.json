@@ -1,0 +1,146 @@
+{
+    "global": {
+        "bosonNetControllerImage": "registry.sensetime.com/sensecore-boson/boson-net-controller:v1.7.0-0-gf61cc51-20231019160454",
+        "hookImage": "registry.sensetime.com/sensecore-boson/boson-assistant:v1.8.0-1-g2b3dabe-20231116213725",
+        "product": "BosonService",
+        "namespace": "plat-boson-service",
+        "imagePullSecret": "sensecore-boson",
+        "enableServiceMonitor": true,
+        "domainName": "network-internal.cn-sh-01.sensecoreapi.dev",
+        "sslSecretName": "tls-cnsh01-api",
+        "nodeSelectorTerms": [
+            {
+                "key": "diamond.sensetime.com/role-business-app",
+                "values": [
+                    "sensecore"
+                ]
+            }
+        ],
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "diamond.sensetime.com/role-k8s-master",
+                "operator": "Equal",
+                "value": "enabled"
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "diamond.sensetime.com/role-business-app",
+                "operator": "Equal",
+                "value": "sensecore"
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "diamond.sensetime.com/belong-resource-prp",
+                "operator": "Exists"
+            }
+        ],
+        "envName": "devxx",
+        "wxURL": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=51e84518-fcf6-4654-9fe4-9186779a7df3",
+        "pgsql": {
+            "host": "xxx",
+            "port": 12345,
+            "user": "xxx",
+            "db": "boson_service_v2",
+            "password": ""
+        },
+        "boson_default": {
+            "zone_name_for_az_resource": "cn-sh-01a",
+            "zone_name_for_region_resource": "cn-sh-01z"
+        },
+        "bosonNetController": {
+            "fullname": "boson-net-controller",
+            "replicas": 3,
+            "cpuLimits": "400m",
+            "memLimits": "1024Mi",
+            "generate_deployment_annotations_timestamp": false,
+            "leaderElect": "true",
+            "envs": {
+                "varName": "boson-net-controller"
+            },
+            "config": {
+                "disableFeatures": [
+                    "snat",
+                    "vpcnatgateway"
+                ],
+                "dataNetworkSwitch": "msn3420",
+                "ibManagerEnable": true,
+                "netDeviceEnable": false,
+                "netDeviceServerURL": "http://10.53.70.250:5050",
+                "netDeviceAccessKey": "WTNsM1VuWnpSa3R4UW1oNlpXNVBDZz09Cg==",
+                "globalSnatRuleName": "sensecore_devxx_vpc_default_snat_rule_cn_sh_01",
+                "globalSnatQosPolicyName": "sensecore_prod_default_tenant_snat_qos_policy",
+                "globalDsnatQosPolicyName": "sensecore_prod_default_tenant_dnat_qos_policy",
+                "sourceZone": "Trust",
+                "destinationZone": "Untrust",
+                "defaultSecurityPolicyRuleName": "Default_policy",
+                "defaultInnerSecurityPolicyRuleName": "Sensecore_prod_inter_nat",
+                "minNatAddressGroupID": 10000,
+                "maxNatAddressGroupID": 65535,
+                "gcIntervalSec": 86400,
+                "gcPauseSec": 60,
+                "gcEnable": false,
+                "slb": {
+                    "enable": false,
+                    "bgpEnable": false,
+                    "agentEnable": true,
+                    "namespace": "plat-boson-infra",
+                    "envoyAdminPort": 19000,
+                    "deployment": {
+                        "agent": {
+                            "admin_http_port": 19500,
+                            "admin_grpc_port": 19501,
+                            "admin_metrics_port": 19502,
+                            "image": "registry.sensetime.com/sensecore-boson/boson-envoy-dataplane:v1.27.0-6-g0a49c3e4e6-20240327202832",
+                            "cmd": [
+                                "sh"
+                            ],
+                            "args": [
+                                "-c",
+                                "while true; do sleep 1; done"
+                            ],
+                            "readinessProbeConfig": "exec:\n  command:\n  - sh\n  - -c\n  - ls\nfailureThreshold: 3\nperiodSeconds: 5\nsuccessThreshold: 1\ntimeoutSeconds: 2"
+                        },
+                        "image": "registry.sensetime.com/sensecore-boson/boson-envoy-dataplane:v0.0.1",
+                        "cmd": [
+                            "sh"
+                        ],
+                        "args": [
+                            "-c",
+                            "while true; do sleep 1; done"
+                        ],
+                        "privileged": true,
+                        "allowPrivilegeEscalation": true,
+                        "tolerationsConfig": "- effect: NoExecute\n  key: diamond.sensetime.com/role-k8s-master\n  operator: Equal\n  value: enabled\n- effect: NoSchedule\n  key: diamond.sensetime.com/role-business-app\n  operator: Equal\n  value: sensecore\n- effect: NoSchedule\n  key: diamond.sensetime.com/belong-resource-prp\n  operator: Exists",
+                        "affinityConfig": "nodeAffinity:\n  requiredDuringSchedulingIgnoredDuringExecution:\n    nodeSelectorTerms:\n    - matchExpressions:\n      - key: diamond.sensetime.com/role-infra-vpc-gw\n        operator: In\n        values:\n        - enabled\npodAntiAffinity:\n  preferredDuringSchedulingIgnoredDuringExecution:\n  - podAffinityTerm:\n      labelSelector:\n        matchExpressions:\n        - key: ovn.kubernetes.io/vpc-nat-gw\n          operator: Exists\n      topologyKey: kubernetes.io/hostname\n    weight: 100",
+                        "termTime": 0,
+                        "readinessProbeConfig": "exec:\n  command:\n  - sh\n  - -c\n  - ls\nfailureThreshold: 3\nperiodSeconds: 5\nsuccessThreshold: 1\ntimeoutSeconds: 2",
+                        "basicNetworkNamespace": "kube-system",
+                        "basicNetworkNAD": "ovn-vpc-external-network",
+                        "replica": 1
+                    },
+                    "envoyConfigTemplatePath": "/etc/envoy/envoy.yaml",
+                    "xDSControllerServiceHost": "0.0.0.0",
+                    "xDSServerGrpcKeepaliveTime": 3,
+                    "xDSServerGrpcKeepaliveTimeout": 3,
+                    "xDSServerGrpcKeepaliveMinTime": 3,
+                    "xDSServerGrpcMaxConcurrentStreams": 1000000,
+                    "upgrade": [
+                        "730"
+                    ]
+                }
+            },
+            "service": {
+                "clusterIP": "10.96.1.52",
+                "ports": {
+                    "http": "52080",
+                    "grpc": "52100",
+                    "metrics": "52030",
+                    "xds": "18000",
+                    "slbHttp": "52040",
+                    "slbGrpc": "52090"
+                }
+            }
+        }
+    }
+}
