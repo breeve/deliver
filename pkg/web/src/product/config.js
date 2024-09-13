@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tree, Button, Input, Modal, message, Select, Form } from 'antd';
+import { Tree, Button, Input, Modal, message, Select, Form, Col, Row, Card } from 'antd';
 import { UndoOutlined, RedoOutlined, SaveOutlined } from '@ant-design/icons';
 import yaml from 'js-yaml';
 
@@ -215,6 +215,7 @@ const DirectoryTreeExample = () => {
 
   const updateYamlContent = (newTreeData) => {
     const yamlContent = generateYaml(newTreeData);
+    console.log('Generated YAML Content:', yamlContent); // Debug log
     setYamlContent(yamlContent);
   };
 
@@ -248,110 +249,72 @@ const DirectoryTreeExample = () => {
 
   const loadYamlFromFile = (event) => {
     const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const yamlContent = e.target.result;
-      try {
-        const parsedYaml = yaml.load(yamlContent);
-        const newTreeData = convertYamlToTree(parsedYaml);
-        setTreeData(newTreeData);
-        saveToHistory(newTreeData);
-      } catch (err) {
-        message.error("YAML 文件解析失败");
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const convertYamlToTree = (data) => {
-    const convertToTree = (obj, parentKey = '') => {
-      return Object.keys(obj).map((key) => {
-        const value = obj[key];
-        const nodeKey = parentKey ? `${parentKey}-${key}` : key;
-  
-        if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-          return {
-            title: key,
-            key: nodeKey,
-            type: 'map',
-            children: convertToTree(value, nodeKey),
-          };
-        } else if (Array.isArray(value)) {
-          return {
-            title: key,
-            key: nodeKey,
-            type: 'array',
-            children: value.map((item, index) => ({
-              title: `${key}-${index}`,
-              key: `${nodeKey}-${index}`,
-              type: typeof item,
-              defaultValue: item,
-            })),
-          };
-        } else {
-          return {
-            title: key,
-            key: nodeKey,
-            type: typeof value,
-            defaultValue: value,
-          };
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const yamlContent = reader.result;
+        try {
+          const jsonData = yaml.load(yamlContent);
+          console.log('Loaded JSON Data:', jsonData); // Debug log
+          // Convert JSON to treeData format if necessary
+          setTreeData(jsonData); // Assuming the JSON is already in the correct format
+          saveToHistory(jsonData);
+          updateYamlContent(jsonData);
+        } catch (e) {
+          message.error('YAML 解析错误');
         }
-      });
-    };
-  
-    return convertToTree(data);
+      };
+      reader.readAsText(file);
+    }
   };
-  
 
   return (
-    <div>
-      <Button icon={<UndoOutlined />} onClick={undo}>撤销</Button>
-      <Button icon={<RedoOutlined />} onClick={redo}>重做</Button>
-      <Button icon={<SaveOutlined />} onClick={saveData}>保存</Button>
-      <Button onClick={addNode}>添加节点</Button>
-      <Button onClick={deleteNode}>删除节点</Button>
-      <Button onClick={() => setIsMapKeyModalVisible(true)}>添加映射键</Button>
-      <Button onClick={exportYaml}>导出 YAML</Button>
-      <input type="file" accept=".yaml, .yml" onChange={loadYamlFromFile} />
-      <Tree
-        treeData={treeData}
-        selectable
-        draggable
-        onSelect={onSelect}
-        onDrop={onDrop}
-      />
+    <Row>
+      <Col span={12}>
+        <Card title="树形结构" style={{ height: '100%', overflowY: 'auto', textAlign: 'left' }}>
+          <Tree
+            treeData={treeData}
+            selectable
+            draggable
+            onSelect={onSelect}
+            onDrop={onDrop}
+            style={{ textAlign: 'left' }}
+          />
+        </Card>
+        <Button onClick={addNode} type="primary">添加节点</Button>
+        <Button onClick={deleteNode} type="danger">删除节点</Button>
+        <Button onClick={undo} icon={<UndoOutlined />} disabled={historyIndex <= 0}>撤销</Button>
+        <Button onClick={redo} icon={<RedoOutlined />} disabled={historyIndex >= history.length - 1}>重做</Button>
+        <Button onClick={saveData} icon={<SaveOutlined />}>保存</Button>
+        <Button onClick={exportYaml}>导出 YAML</Button>
+        <input type="file" onChange={loadYamlFromFile} />
+      </Col>
+      <Col span={12}>
+        <Card title="YAML Content" style={{ height: '100%', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+          <pre>{yamlContent}</pre>
+        </Card>
+      </Col>
       <Modal
         title="添加节点"
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={() => setIsModalVisible(false)}
       >
-        <Form layout="vertical">
+        <Form>
           <Form.Item label="节点名称">
-            <Input
-              value={editingNode.name}
-              onChange={(e) => setEditingNode({ ...editingNode, name: e.target.value })}
-            />
+            <Input value={editingNode.name} onChange={(e) => setEditingNode({ ...editingNode, name: e.target.value })} />
           </Form.Item>
           <Form.Item label="节点类型">
-            <Select
-              value={editingNode.type}
-              onChange={(value) => setEditingNode({ ...editingNode, type: value })}
-            >
-              <Option value="string">字符串</Option>
-              <Option value="int">整数</Option>
-              <Option value="float">浮点数</Option>
-              <Option value="array">数组</Option>
-              <Option value="map">映射</Option>
+            <Select value={editingNode.type} onChange={(value) => setEditingNode({ ...editingNode, type: value, defaultValue: getDefaultValueForType(value) })}>
+              <Option value="string">String</Option>
+              <Option value="int">Integer</Option>
+              <Option value="float">Float</Option>
+              <Option value="array">Array</Option>
+              <Option value="map">Map</Option>
             </Select>
           </Form.Item>
           <Form.Item label="默认值">
-            <Input
-              value={editingNode.defaultValue}
-              onChange={(e) => setEditingNode({ ...editingNode, defaultValue: e.target.value })}
-            />
+            <Input value={editingNode.defaultValue} onChange={(e) => setEditingNode({ ...editingNode, defaultValue: e.target.value })} />
           </Form.Item>
         </Form>
       </Modal>
@@ -361,34 +324,23 @@ const DirectoryTreeExample = () => {
         onOk={handleMapOk}
         onCancel={() => setIsMapKeyModalVisible(false)}
       >
-        <Form layout="vertical">
-          <Form.Item label="键">
-            <Input
-              value={editingMapKeyValue.key}
-              onChange={(e) => setEditingMapKeyValue({ ...editingMapKeyValue, key: e.target.value })}
-            />
+        <Form>
+          <Form.Item label="Key">
+            <Input value={editingMapKeyValue.key} onChange={(e) => setEditingMapKeyValue({ ...editingMapKeyValue, key: e.target.value })} />
           </Form.Item>
           <Form.Item label="值类型">
-            <Select
-              value={editingMapKeyValue.valueType}
-              onChange={(value) => setEditingMapKeyValue({ ...editingMapKeyValue, valueType: value })}
-            >
-              <Option value="string">字符串</Option>
-              <Option value="int">整数</Option>
-              <Option value="float">浮点数</Option>
-              <Option value="array">数组</Option>
-              <Option value="map">映射</Option>
+            <Select value={editingMapKeyValue.valueType} onChange={(value) => setEditingMapKeyValue({ ...editingMapKeyValue, valueType: value, value: getDefaultValueForType(value) })}>
+              <Option value="string">String</Option>
+              <Option value="int">Integer</Option>
+              <Option value="float">Float</Option>
             </Select>
           </Form.Item>
-          <Form.Item label="值">
-            <Input
-              value={editingMapKeyValue.value}
-              onChange={(e) => setEditingMapKeyValue({ ...editingMapKeyValue, value: e.target.value })}
-            />
+          <Form.Item label="默认值">
+            <Input value={editingMapKeyValue.value} onChange={(e) => setEditingMapKeyValue({ ...editingMapKeyValue, value: e.target.value })} />
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </Row>
   );
 };
 
