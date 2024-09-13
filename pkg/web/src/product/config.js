@@ -86,6 +86,13 @@ const DirectoryTreeExample = () => {
       message.error('请先选择一个节点');
       return;
     }
+
+    const parentNode = findParentNode(treeData, selectedKey);
+    if (parentNode && (parentNode.type === 'map' || parentNode.type === 'array')) {
+      message.error('不能在 map 或 array 类型节点下删除');
+      return;
+    }
+
     Modal.confirm({
       title: '确认删除?',
       content: '删除后将无法恢复此节点',
@@ -102,6 +109,7 @@ const DirectoryTreeExample = () => {
             })
             .filter((node) => node !== null);
         };
+
         const newTreeData = removeNode(treeData, selectedKey);
         setTreeData(newTreeData);
         saveToHistory(newTreeData);
@@ -183,9 +191,21 @@ const DirectoryTreeExample = () => {
     return result;
   };
 
+  const findParentNode = (nodes, key) => {
+    let result = null;
+    nodes.forEach((node) => {
+      if (node.children && node.children.some(child => child.key === key)) {
+        result = node;
+      } else if (node.children) {
+        result = findParentNode(node.children, key);
+      }
+    });
+    return result;
+  };
+
   const generateYaml = (nodes) => {
     const result = {};
-
+  
     const processNode = (node) => {
       let value;
       switch (node.type) {
@@ -199,20 +219,24 @@ const DirectoryTreeExample = () => {
           value = node.children && node.children.length > 0 ? node.children.map(processNode) : [];
           break;
         case 'map':
-          value = node.children && node.children.length > 0 ? processNode(node.children) : {};
+          value = node.children && node.children.length > 0 ? node.children.reduce((acc, child) => {
+            const childResult = processNode(child);
+            return { ...acc, ...childResult };
+          }, {}) : {};
           break;
         default:
           value = node.defaultValue;
       }
       return { [node.title]: value };
     };
-
+  
     nodes.forEach((node) => {
       Object.assign(result, processNode(node));
     });
-
+  
     return yaml.dump(result, { lineWidth: -1 });
   };
+  
 
   const updateYamlContent = (newTreeData) => {
     const yamlContent = generateYaml(newTreeData);
@@ -255,28 +279,21 @@ const DirectoryTreeExample = () => {
         const yamlContent = reader.result;
         try {
           const jsonData = yaml.load(yamlContent);
-          // Convert JSON to treeData format if necessary
-          setTreeData(jsonData); // Assuming the JSON is already in the correct format
-          saveToHistory(jsonData);
-          updateYamlContent(jsonData);
+          // Convert JSON data to treeData format if necessary
+          setTreeData(convertJsonToTreeData(jsonData));
+          updateYamlContent(convertJsonToTreeData(jsonData));
         } catch (e) {
-          message.error('YAML 解析错误');
+          message.error('YAML 解析失败');
         }
       };
       reader.readAsText(file);
     }
   };
 
-  const renderTreeNodes = (data) =>
-    data.map((item) => (
-      <TreeNode
-        title={`${item.title} : (${item.defaultValue})`}
-        key={item.key}
-        dataRef={item}
-      >
-        {item.children ? renderTreeNodes(item.children) : null}
-      </TreeNode>
-    ));
+  const convertJsonToTreeData = (jsonData) => {
+    // Implement your logic to convert JSON to treeData format
+    return [];
+  };
 
   return (
     <Row>
@@ -290,7 +307,7 @@ const DirectoryTreeExample = () => {
             onDrop={onDrop}
             style={{ textAlign: 'left' }}
           >
-            {renderTreeNodes(treeData)}
+            
           </Tree>
         </Card>
         <Button onClick={addNode} type="primary">添加节点</Button>
