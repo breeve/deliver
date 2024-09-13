@@ -4,7 +4,6 @@ import { UndoOutlined, RedoOutlined, SaveOutlined } from '@ant-design/icons';
 import yaml from 'js-yaml';
 
 const { Option } = Select;
-const { TreeNode } = Tree;
 
 const DirectoryTreeExample = () => {
   const [treeData, setTreeData] = useState([]);
@@ -306,6 +305,8 @@ const DirectoryTreeExample = () => {
             onSelect={onSelect}
             onDrop={onDrop}
             style={{ textAlign: 'left' }}
+            defaultExpandAll
+            blockNode
           >
             
           </Tree>
