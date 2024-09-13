@@ -4,13 +4,14 @@ import { UndoOutlined, RedoOutlined, SaveOutlined } from '@ant-design/icons';
 import yaml from 'js-yaml';
 
 const { Option } = Select;
+const { TreeNode } = Tree;
 
 const DirectoryTreeExample = () => {
   const [treeData, setTreeData] = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isMapKeyModalVisible, setIsMapKeyModalVisible] = useState(false);
-  const [editingNode, setEditingNode] = useState({ name: '', type: 'string', defaultValue: '' });
+  const [editingNode, setEditingNode] = useState({ name: '', type: 'string', defaultValue: '', stringDefaultValue: '' });
   const [editingMapKeyValue, setEditingMapKeyValue] = useState({ key: '', valueType: 'string', value: '' });
   const [yamlContent, setYamlContent] = useState('');
   const [history, setHistory] = useState([]);
@@ -215,7 +216,6 @@ const DirectoryTreeExample = () => {
 
   const updateYamlContent = (newTreeData) => {
     const yamlContent = generateYaml(newTreeData);
-    console.log('Generated YAML Content:', yamlContent); // Debug log
     setYamlContent(yamlContent);
   };
 
@@ -255,7 +255,6 @@ const DirectoryTreeExample = () => {
         const yamlContent = reader.result;
         try {
           const jsonData = yaml.load(yamlContent);
-          console.log('Loaded JSON Data:', jsonData); // Debug log
           // Convert JSON to treeData format if necessary
           setTreeData(jsonData); // Assuming the JSON is already in the correct format
           saveToHistory(jsonData);
@@ -268,6 +267,17 @@ const DirectoryTreeExample = () => {
     }
   };
 
+  const renderTreeNodes = (data) =>
+    data.map((item) => (
+      <TreeNode
+        title={`${item.title} : (${item.defaultValue})`}
+        key={item.key}
+        dataRef={item}
+      >
+        {item.children ? renderTreeNodes(item.children) : null}
+      </TreeNode>
+    ));
+
   return (
     <Row>
       <Col span={12}>
@@ -279,7 +289,9 @@ const DirectoryTreeExample = () => {
             onSelect={onSelect}
             onDrop={onDrop}
             style={{ textAlign: 'left' }}
-          />
+          >
+            {renderTreeNodes(treeData)}
+          </Tree>
         </Card>
         <Button onClick={addNode} type="primary">添加节点</Button>
         <Button onClick={deleteNode} type="danger">删除节点</Button>
@@ -313,9 +325,13 @@ const DirectoryTreeExample = () => {
               <Option value="map">Map</Option>
             </Select>
           </Form.Item>
-          <Form.Item label="默认值">
-            <Input value={editingNode.defaultValue} onChange={(e) => setEditingNode({ ...editingNode, defaultValue: e.target.value })} />
-          </Form.Item>
+          {
+            editingNode.type === 'string' && (
+              <Form.Item label="默认值">
+                <Input value={editingNode.stringDefaultValue} onChange={(e) => setEditingNode({ ...editingNode, stringDefaultValue: e.target.value })} />
+              </Form.Item>
+            )
+          }
         </Form>
       </Modal>
       <Modal
