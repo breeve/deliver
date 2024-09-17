@@ -1,14 +1,11 @@
 package main
 
-// A simple program demonstrating the text area component from the Bubbles
-// component library.
-
 import (
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -27,46 +24,35 @@ type (
 )
 
 type model struct {
-	viewport    viewport.Model
+	viewPort    viewport.Model
 	messages    []string
-	textarea    textarea.Model
+	textInput   textinput.Model
 	senderStyle lipgloss.Style
+	perfix      string
 	err         error
 }
 
 func initialModel() model {
-	ta := textarea.New()
-	ta.Placeholder = "Send a message..."
-	ta.Focus()
+	vp := viewport.New(0, 1)
+	vp.SetContent(strings.Join([]string{lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Render("default: ")}, "\n"))
+	vp.GotoBottom()
 
-	ta.Prompt = "┃ "
-	ta.CharLimit = 280
-
-	ta.SetWidth(30)
-	ta.SetHeight(3)
-
-	// Remove cursor line styling
-	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
-
-	ta.ShowLineNumbers = false
-
-	vp := viewport.New(30, 5)
-	vp.SetContent(`Welcome to the chat room!
-Type a message and press Enter to send.`)
-
-	ta.KeyMap.InsertNewline.SetEnabled(false)
+	ti := textinput.New()
+	ti.Prompt = ":"
+	ti.Focus()
 
 	return model{
-		textarea:    ta,
+		textInput:   ti,
 		messages:    []string{},
-		viewport:    vp,
+		viewPort:    vp,
 		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		perfix:      "default: ",
 		err:         nil,
 	}
 }
 
 func (m model) Init() tea.Cmd {
-	return textarea.Blink
+	return textinput.Blink
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -75,23 +61,61 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		vpCmd tea.Cmd
 	)
 
-	m.textarea, tiCmd = m.textarea.Update(msg)
-	m.viewport, vpCmd = m.viewport.Update(msg)
+	m.textInput, tiCmd = m.textInput.Update(msg)
+	m.viewPort, vpCmd = m.viewPort.Update(msg)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			fmt.Println(m.textarea.Value())
+			fmt.Println(m.textInput.Value())
 			return m, tea.Quit
-		case tea.KeyEnter:
-			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
-			m.textarea.Reset()
-			m.viewport.GotoBottom()
-		}
+		case tea.KeyTab:
+			showLine := m.senderStyle.Render(m.perfix) + "help msg xxx"
 
-	// We handle errors just like any other message
+			m.messages = append(m.messages, showLine)
+			m.viewPort.SetContent(strings.Join(m.messages, "\n"))
+			m.textInput.Reset()
+			m.viewPort.GotoBottom()
+		case tea.KeyEnter:
+			switch m.textInput.Value() {
+			case "config":
+				m.perfix += m.textInput.Value() + ": "
+				showLine := m.senderStyle.Render(m.perfix)
+
+				m.messages = append(m.messages, showLine)
+				m.viewPort.SetContent(strings.Join(m.messages, "\n"))
+				m.textInput.Reset()
+				m.viewPort.GotoBottom()
+			case "show interface":
+				showLine := m.senderStyle.Render(m.perfix) + m.textInput.Value()
+				text := []string{"1", "2", "3"}
+
+				m.messages = append(m.messages, showLine)
+				m.messages = append(m.messages, text...)
+				m.viewPort.SetContent(strings.Join(m.messages, "\n"))
+				m.textInput.Reset()
+				m.viewPort.GotoBottom()
+			default:
+				if len(m.textInput.Value()) > 0 {
+					showLine := m.senderStyle.Render(m.perfix) + "help msg xxx"
+
+					m.messages = append(m.messages, showLine)
+					m.viewPort.SetContent(strings.Join(m.messages, "\n"))
+					m.textInput.Reset()
+					m.viewPort.GotoBottom()
+				} else {
+					showLine := m.senderStyle.Render(m.perfix)
+
+					m.messages = append(m.messages, showLine)
+					m.viewPort.SetContent(strings.Join(m.messages, "\n"))
+					m.textInput.Reset()
+					m.viewPort.GotoBottom()
+				}
+			}
+		}
+	case tea.WindowSizeMsg:
+		m.viewPort.Height = msg.Height - 5
 	case errMsg:
 		m.err = msg
 		return m, nil
@@ -103,7 +127,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	return fmt.Sprintf(
 		"%s\n\n%s",
-		m.viewport.View(),
-		m.textarea.View(),
+		m.viewPort.View(),
+		m.textInput.View(),
 	) + "\n\n"
 }
