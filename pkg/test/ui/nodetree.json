@@ -1,0 +1,165 @@
+[
+    {
+        "title": "key_str",
+        "key": "key_str",
+        "type": "normal",
+        "value": "hello"
+    },
+    {
+        "title": "key_int",
+        "key": "key_int",
+        "type": "normal",
+        "value": 100
+    },
+    {
+        "title": "key_bool",
+        "key": "key_bool",
+        "type": "normal",
+        "value": true
+    },
+    {
+        "title": "key_map",
+        "key": "key_map",
+        "children": [
+            {
+                "title": "key_str",
+                "key": "key_map-key_str",
+                "type": "normal",
+                "value": "hello"
+            },
+            {
+                "title": "key_int",
+                "key": "key_map-key_int",
+                "type": "normal",
+                "value": 100
+            },
+            {
+                "title": "key_bool",
+                "key": "key_map-key_bool",
+                "type": "normal",
+                "value": true
+            },
+            {
+                "title": "key_map",
+                "key": "key_map-key_map",
+                "children": [
+                    {
+                        "title": "key_str",
+                        "key": "key_map-key_map-key_str",
+                        "type": "normal",
+                        "value": "hello"
+                    }
+                ],
+                "type": "object"
+            },
+            {
+                "title": "key_list1",
+                "key": "key_map-key_list1",
+                "children": [
+                    {
+                        "title": "0",
+                        "key": "key_map-key_list1-0",
+                        "children": [
+                            {
+                                "title": "key_str",
+                                "key": "key_map-key_list1-0-key_str",
+                                "type": "normal",
+                                "value": "hello"
+                            }
+                        ],
+                        "type": "array"
+                    }
+                ],
+                "type": "object"
+            }
+        ],
+        "type": "object"
+    },
+    {
+        "title": "key_list1",
+        "key": "key_list1",
+        "children": [
+            {
+                "title": "0",
+                "key": "key_list1-0",
+                "children": [
+                    {
+                        "title": "key_str",
+                        "key": "key_list1-0-key_str",
+                        "type": "normal",
+                        "value": "hello"
+                    }
+                ],
+                "type": "array"
+            }
+        ],
+        "type": "object"
+    },
+    {
+        "title": "key_list2",
+        "key": "key_list2",
+        "children": [
+            {
+                "title": "0",
+                "key": "key_list2-0",
+                "children": [
+                    {
+                        "title": "key_int",
+                        "key": "key_list2-0-key_int",
+                        "type": "normal",
+                        "value": 100
+                    }
+                ],
+                "type": "array"
+            }
+        ],
+        "type": "object"
+    },
+    {
+        "title": "key_list3",
+        "key": "key_list3",
+        "children": [
+            {
+                "title": "0",
+                "key": "key_list3-0",
+                "children": [
+                    {
+                        "title": "key_bool",
+                        "key": "key_list3-0-key_bool",
+                        "type": "normal",
+                        "value": true
+                    }
+                ],
+                "type": "array"
+            }
+        ],
+        "type": "object"
+    },
+    {
+        "title": "key_list4",
+        "key": "key_list4",
+        "children": [
+            {
+                "title": "0",
+                "key": "key_list4-0",
+                "children": [
+                    {
+                        "title": "key_map",
+                        "key": "key_list4-0-key_map",
+                        "children": [
+                            {
+                                "title": "key_str",
+                                "key": "key_list4-0-key_map-key_str",
+                                "type": "normal",
+                                "value": "hello"
+                            }
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "type": "array"
+            }
+        ],
+        "type": "object"
+    }
+]

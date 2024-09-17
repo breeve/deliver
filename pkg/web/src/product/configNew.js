@@ -6,6 +6,7 @@ const EditableTree = () => {
     const [treeData, setTreeData] = useState([]);
     const [editingKey, setEditingKey] = useState(null);
     const [inputValue, setInputValue] = useState('');
+    const [yamlContent, setYamlContent] = useState('');
 
     const startEditing = (key, title) => {
         setEditingKey(key);
@@ -28,6 +29,7 @@ const EditableTree = () => {
         const newTreeData = updateTreeData(treeData);
         setTreeData(newTreeData);
         setEditingKey(null);
+        updateYamlContent(newTreeData)
     };
 
     const addNode = (key) => {
@@ -49,6 +51,7 @@ const EditableTree = () => {
 
         const newTreeData = updateTreeData(treeData);
         setTreeData(newTreeData);
+        updateYamlContent(newTreeData)
     };
 
     const deleteNode = (key) => {
@@ -66,6 +69,7 @@ const EditableTree = () => {
 
         const newTreeData = updateTreeData(treeData);
         setTreeData(newTreeData);
+        updateYamlContent(newTreeData)
     };
 
     const loadYamlFromFile = (event) => {
@@ -77,6 +81,7 @@ const EditableTree = () => {
                 try {
                     const jsonData = yaml.load(yamlContent);
                     setTreeData(convertJsonToTreeData(jsonData));
+                    updateYamlContent(convertJsonToTreeData(jsonData))
                 } catch (e) {
                     message.error('YAML 解析失败');
                 }
@@ -109,6 +114,68 @@ const EditableTree = () => {
         return transformNode(jsonData);
     };
 
+    const convertJsonToTreeDataError = (jsonData) => {
+        const transformNode = (data, keyPrefix = '') => {
+            if (Array.isArray(data)) {
+                return data.map((item, index) => ({
+                    title: index.toString(),
+                    key: `${keyPrefix}${index}`,
+                    children: transformNode(item, `${keyPrefix}${index}-`),
+                    type: 'array',
+                }));
+            } else if (typeof data === 'object' && data !== null) {
+                const retObj = {}
+                Object.keys(data).map((key) => {
+                    let ret
+                    if (!((Array.isArray(data[key]) || (typeof data[key] === 'object' && data[key] != null)))) {
+                        ret = {
+                            title: key,
+                            key: `${keyPrefix}${key}`,
+                            type: 'normal',
+                            value: data[key],
+                        }
+                    } else {
+                        if (Array.isArray(data[key])) {
+                            console.log(data[key])
+                            const dataArray = data[key]
+                            const retTmp = []
+                            dataArray.map((item, index) => {
+                                const nodeTmp = transformNode(item, index)
+                                retTmp.push(nodeTmp)
+                            })
+                            ret = {
+                                title: key,
+                                key: `${keyPrefix}${key}`,
+                                children: retTmp,
+                                type: 'array',
+                            }
+                        } else {
+                            ret = {
+                                title: key,
+                                key: `${keyPrefix}${key}`,
+                                children: transformNode(data[key], `${keyPrefix}${key}-`),
+                                type: 'object',
+                            }
+                        }
+                    }
+
+                    Object.assign(retObj, ret)
+                });
+
+                console.log(retObj)
+                return retObj
+            } else {
+                return {
+                    title: data.toString(),
+                    key: `${keyPrefix}end`,
+                    type: 'normal',
+                };
+            }
+        };
+        const ret = transformNode(jsonData);
+        return ret
+    };
+
     const updateTreeWithButtons = (data) => {
         return data.map((item) => {
             const titleElement = editingKey === item.key
@@ -138,6 +205,50 @@ const EditableTree = () => {
         });
     };
 
+    const generateYaml = (nodes) => {
+        function buildYamlObject(obj) {
+            const result = {};
+
+            for (const item of obj) {
+                const { title, type, value, children } = item;
+
+                if (type === 'normal') {
+                    result[title] = value;
+                } else if (type === 'object' || type === 'array') {
+                    if (type === 'object') {
+                        if (!result[title]) {
+                            result[title] = {}
+                        }
+                    }
+                    if (type === 'array') {
+                        console.log(item)
+                    }
+
+                    if (type === 'object') {
+                        Object.assign(result[title], buildYamlObject(children));
+                    } else {
+                        for (const child of children) {
+                            const a = buildYamlObject([child])
+                            //result[title].push(a);
+                            // Object.assign(result[title], a);
+                            Object.assign(result, a);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        const intermediateObject = buildYamlObject(nodes);
+        return yaml.dump(intermediateObject, { lineWidth: -1 });
+    };
+
+    const updateYamlContent = (newTreeData) => {
+        const yamlContent = generateYaml(newTreeData);
+        setYamlContent(yamlContent);
+    };
+
     return (
         <Row>
             <Col span={12}>
@@ -149,6 +260,11 @@ const EditableTree = () => {
                     />
                 </Card>
                 <input type="file" onChange={loadYamlFromFile} />
+            </Col>
+            <Col span={12}>
+                <Card title="YAML Content" style={{ height: '100%', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+                    <pre style={{ textAlign: 'left' }}>{yamlContent}</pre>
+                </Card>
             </Col>
         </Row>
     );

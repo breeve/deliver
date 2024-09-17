@@ -1,0 +1,22 @@
+key_str: hello
+key_int: 100
+key_bool: true
+key_map:
+  key_str: hello
+  key_int: 100
+  key_bool: true
+  key_map:
+    key_str: hello
+  key_list1:
+  - key_str: hello
+key_list1:
+- key_str: hello1
+- key_str: hello2
+- key_str: hello3
+key_list2:
+- key_int: 100
+key_list3:
+- key_bool: true
+key_list4:
+  - key_map:
+      key_str: hello
