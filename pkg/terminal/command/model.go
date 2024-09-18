@@ -103,9 +103,14 @@ func (m *cmdModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.WindowSizeMsg:
-		m.display.Height = m.displayLenMax + 2 // 因为边框占了两行
+		displayLen := 0
+		if len(m.displayCache) < m.displayLenMax {
+			displayLen = len(m.displayCache)
+		} else {
+			displayLen = m.displayLenMax
+		}
+		m.display.Height = displayLen + 2 // 因为边框占了两行
 		m.display.Width = msg.Width
-		m.display.SetYOffset(-1)
 		m.display.Style.Width(msg.Width)
 	case error:
 		logrus.Errorf("update error:%s", msg.Error())
@@ -148,6 +153,13 @@ func (m *cmdModel) displayFlush(args string, outputs []string) {
 
 	m.display.SetContent(strings.Join(m.displayCache, "\n"))
 	m.display.GotoBottom()
+	displayLen := 0
+	if len(m.displayCache) < m.displayLenMax {
+		displayLen = len(m.displayCache)
+	} else {
+		displayLen = m.displayLenMax
+	}
+	m.display.Height = displayLen + 2 // 因为边框占了两行
 
 	m.input.Reset()
 }
