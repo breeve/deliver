@@ -5,7 +5,7 @@ import (
 )
 
 type Command struct {
-	Cmd *cobra.Command
+	cmd *cobra.Command
 }
 
 func (c *Command) Execute(argOrigin string) (stdOut string, stdErr string, err error) {
@@ -13,5 +13,9 @@ func (c *Command) Execute(argOrigin string) (stdOut string, stdErr string, err e
 }
 
 func (c *Command) CommandPath() string {
-	return c.Cmd.CommandPath()
+	return c.cmd.CommandPath()
+}
+
+func NewCommand(cmd *cobra.Command) *Command {
+	return &Command{cmd: cmd}
 }

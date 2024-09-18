@@ -12,7 +12,5 @@ func RootCommand() (root *command.Command, err error) {
 		Long:  ``,
 	}
 
-	return &command.Command{
-		Cmd: rootCmd,
-	}, nil
+	return command.NewCommand(rootCmd), nil
 }
