@@ -12,10 +12,6 @@ func (c *Command) Execute(argOrigin string) (stdOut string, stdErr string, err e
 	return "", "", nil
 }
 
-func (c *Command) CommandPath() string {
-	return ""
-}
-
 func NewCommand() *Command {
 	return &Command{cmd: nil}
 }
