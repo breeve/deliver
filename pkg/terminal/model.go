@@ -16,8 +16,8 @@ import (
 
 type cmdModel struct {
 	// command
-	current *utilsCommand.Command
-	root    *utilsCommand.Command
+	current *utilsCommand.Group
+	root    *utilsCommand.Group
 
 	// view
 	input           textinput.Model
@@ -32,7 +32,7 @@ type cmdModel struct {
 }
 
 func initCmdModel() (*cmdModel, error) {
-	rootCmd, err := command.RootCommand()
+	rootCmd, err := command.RootGroup()
 	if err != nil {
 		logrus.Errorf("init command model fail, init command error:%s", err)
 		return nil, err
@@ -63,7 +63,7 @@ func initCmdModel() (*cmdModel, error) {
 	}, nil
 }
 
-func cmdPrefix(cmd *utilsCommand.Command) string {
+func cmdPrefix(cmd *utilsCommand.Group) string {
 	return fmt.Sprintf("%s: ", cmd.CommandPath())
 }
 

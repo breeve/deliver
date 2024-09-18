@@ -11,9 +11,13 @@ func (g *Group) AddCommand(cmd *Command) error {
 	return nil
 }
 
-func (g *Group) Execute(argOrigin string) error {
+func (g *Group) Execute(argOrigin string) (stdOut string, stdErr string, err error) {
 	// change to child OR exec cmd-self
-	return nil
+	return "", "", nil
+}
+
+func (g *Group) CommandPath() string {
+	return ""
 }
 
 func NewGroup() *Group {

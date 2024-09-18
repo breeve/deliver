@@ -13,9 +13,9 @@ func (c *Command) Execute(argOrigin string) (stdOut string, stdErr string, err e
 }
 
 func (c *Command) CommandPath() string {
-	return c.cmd.CommandPath()
+	return ""
 }
 
-func NewCommand(cmd *cobra.Command) *Command {
-	return &Command{cmd: cmd}
+func NewCommand() *Command {
+	return &Command{cmd: nil}
 }
