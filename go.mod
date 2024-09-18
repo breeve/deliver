@@ -8,6 +8,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1
 	google.golang.org/grpc v1.66.2
