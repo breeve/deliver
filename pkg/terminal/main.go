@@ -1,13 +1,12 @@
 package main
 
 import (
-	"github.com/breeve/deliver/pkg/terminal/command"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	m, err := command.InitCmdModel()
+	m, err := initCmdModel()
 	if err != nil {
 		logrus.Fatalf("init cmd model err:%s", err)
 		return

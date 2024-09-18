@@ -1,10 +1,12 @@
-package command
+package main
 
 import (
 	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/breeve/deliver/pkg/terminal/command"
+	utilsCommand "github.com/breeve/deliver/pkg/terminal/utils/command"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,8 +16,8 @@ import (
 
 type cmdModel struct {
 	// command
-	current *Command
-	root    *Command
+	current *utilsCommand.Command
+	root    *utilsCommand.Command
 
 	// view
 	input           textinput.Model
@@ -29,8 +31,8 @@ type cmdModel struct {
 	infos []string
 }
 
-func InitCmdModel() (*cmdModel, error) {
-	rootCmd, err := rootCommand()
+func initCmdModel() (*cmdModel, error) {
+	rootCmd, err := command.RootCommand()
 	if err != nil {
 		logrus.Errorf("init command model fail, init command error:%s", err)
 		return nil, err
@@ -61,7 +63,7 @@ func InitCmdModel() (*cmdModel, error) {
 	}, nil
 }
 
-func cmdPrefix(cmd *Command) string {
+func cmdPrefix(cmd *utilsCommand.Command) string {
 	return fmt.Sprintf("%s: ", cmd.CommandPath())
 }
 
