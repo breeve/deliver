@@ -10,13 +10,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 type cmdModel struct {
 	// command
-	current *cobra.Command
-	root    *cobra.Command
+	current *Command
+	root    *Command
 
 	// view
 	input           textinput.Model
@@ -31,7 +30,7 @@ type cmdModel struct {
 }
 
 func InitCmdModel() (*cmdModel, error) {
-	rootCmd, err := InitCommand()
+	rootCmd, err := rootCommand()
 	if err != nil {
 		logrus.Errorf("init command model fail, init command error:%s", err)
 		return nil, err
@@ -62,7 +61,7 @@ func InitCmdModel() (*cmdModel, error) {
 	}, nil
 }
 
-func cmdPrefix(cmd *cobra.Command) string {
+func cmdPrefix(cmd *Command) string {
 	return fmt.Sprintf("%s: ", cmd.CommandPath())
 }
 
@@ -139,17 +138,31 @@ func (m *cmdModel) View() string {
 	)
 }
 
-func (m *cmdModel) runCmd(argStr string) ([]string, error) {
-	return strings.Fields(argStr), nil
+func (m *cmdModel) runCmd(argOrigin string) ([]string, error) {
+	m.consoleInfo(fmt.Sprintf("argOrigin(%d): %s", len(argOrigin), argOrigin))
+	if len(argOrigin) == 0 {
+		return []string{}, nil
+	}
+	stdOut, stdErr, err := m.current.Execute(argOrigin)
+	if err != nil {
+		return nil, fmt.Errorf("StdErr:%s, err:%s", stdErr, err)
+	}
+	if len(stdOut) != 0 {
+		return []string{stdOut}, nil
+	}
+	return []string{}, nil
 }
 
 func (m *cmdModel) displayFlush(args string, outputs []string) {
-	m.displayCache = append(m.displayCache, lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Render(cmdPrefix(m.current))+args)
-	m.displayCache = append(m.displayCache, outputs...)
+	m.displayCache = append(m.displayCache, lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Render(
+		cmdPrefix(m.current))+args,
+	)
+	if len(outputs) > 0 {
+		m.displayCache = append(m.displayCache, outputs...)
+	}
 	if len(m.displayCache) > m.displayCacheMax {
 		m.displayCache = m.displayCache[len(m.displayCache)-m.displayCacheMax:]
 	}
-	m.consoleInfo(fmt.Sprintf("cache:len:%d", len(m.displayCache)))
 
 	m.display.SetContent(strings.Join(m.displayCache, "\n"))
 	m.display.GotoBottom()
